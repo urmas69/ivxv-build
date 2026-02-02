@@ -1,0 +1,62 @@
+{
+  "election" : "KOV_2025",
+  "type" : "INVALID_CIPHERTEXTS_REMOVED",
+  "ballots" : {
+    "47608082724" : {
+      "voterId" : "47608082724",
+      "ballots" : [ {
+        "id" : "20251018140346446+0300",
+        "time" : "2025-10-18T14:04:15Z",
+        "version" : "702541370b1271f577f9b033d54e712b",
+        "name" : "<Valija Nimi>",
+        "districtId" : "0793.1",
+        "parish" : "0793",
+        "votes" : {
+          "KOV_2025.question-KOV_2025" : "MIHWMAsGCSsGAQQBho0fATCBxgRhBErGDRc6mj0O8+1Ars6JDrKvA1AeoJVn5o0bomZePS+AGKS+tEQxYvvr+9SccT+2709U1S2GpDVFsr5V8Yhnc7GV7tUSzHb6DzJ9jnLra40Fm1XoCpsILWvW/3Lva/BFyQRhBBXVx729bbdOvKbTG25GTYlONEbLraEk7kzvD1BdxzMsyaLq5edswaWT+46/3aqLTuww8KDM79U4QHEXJR/w+ZbZVReaVpearWewO5rX87HltXphzUgKTliMtWO1DanfGw=="
+        }
+      } ]
+    },
+    "37909110298" : {
+      "voterId" : "37909110298",
+      "ballots" : [ {
+        "id" : "20251018145427849+0300",
+        "time" : "2025-10-18T14:54:35Z",
+        "version" : "fc27ab64fcfc2a8c5e6a613320f83984",
+        "name" : "<Valija Nimi>",
+        "districtId" : "0793.1",
+        "parish" : "0793",
+        "votes" : {
+          "KOV_2025.question-KOV_2025" : "MIHWMAsGCSsGAQQBho0fATCBxgRhBBr0vzMaEsozf0u8c0/RqDpsTetL8sjjYhs5rs6BuWNeI0O9lDSnrBG1K1m2JJLiNav43XvCjxn8vV/lQaXDJW/CSDhD64HW01J17MGeu47dFD5fnwDwX9WFBiDQd5Qr9ARhBJVOpLJfop79HEFVnqyAAvurGv9at8Q8RaWXjfdFYAu6pfkJoOJeh0rl+wcC4ATKFZeUSSuB812eSj7waJrT4QOLSvLjsstfwDU6uQFQtnns/DY4VxxK5QO/fRNy9xrpRg=="
+        }
+      } ]
+    },
+    "50201022754" : {
+      "voterId" : "50201022754",
+      "ballots" : [ {
+        "id" : "20251013072940195+0300",
+        "time" : "2025-10-13T07:29:49Z",
+        "version" : "8260535429bfa7d8bfa72e27cee6a252",
+        "name" : "<Valija Nimi>",
+        "districtId" : "0793.1",
+        "parish" : "0793",
+        "votes" : {
+          "KOV_2025.question-KOV_2025" : "MIHWMAsGCSsGAQQBho0fATCBxgRhBDJU7diWbz1K7gRmr1fgWliAlh0PxTUAmeE9N2hm03mb1yA/4tsokT5ixs6gPWTAgKTclnDhdL5VsgAkPPHFdPRGAoh+TG6J6aWbfiYzunrqRx0jyxCyODttoChwMkv6oARhBKXsOTflT67vbOOtB+/LUoVqVYCpxKk/tQhitlEGGT1J5Ii34GyU4XYsnydem9apjQSjIog9l8Xy2qOA5CQd6bcP1jwHAd3NavWeoBmNv7TU7OgGw9Qx7xVx517iQv7yxg=="
+        }
+      } ]
+    },
+    "38106104710" : {
+      "voterId" : "38106104710",
+      "ballots" : [ {
+        "id" : "20251018141205903+0300",
+        "time" : "2025-10-18T14:12:15Z",
+        "version" : "9f0dc335f67dbad0ad0f15c4d20b47c8",
+        "name" : "<Valija Nimi>",
+        "districtId" : "0793.1",
+        "parish" : "0793",
+        "votes" : {
+          "KOV_2025.question-KOV_2025" : "MIHWMAsGCSsGAQQBho0fATCBxgRhBErGDRc6mj0O8+1Ars6JDrKvA1AeoJVn5o0bomZePS+AGKS+tEQxYvvr+9SccT+2709U1S2GpDVFsr5V8Yhnc7GV7tUSzHb6DzJ9jnLra40Fm1XoCpsILWvW/3Lva/BFyQRhBBXVx729bbdOvKbTG25GTYlONEbLraEk7kzvD1BdxzMsyaLq5edswaWT+46/3aqLTuww8KDM79U4QHEXJR/w+ZbZVReaVpearWewO5rX87HltXphzUgKTliMtWO1DanfGw=="
+        }
+      } ]
+    }
+  }
+}
