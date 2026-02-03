@@ -1,0 +1,25 @@
+1. INDEPENDENT PROJECT
+This repository (ivxv-build) is an independent effort to document and test 
+the Estonian E-voting system (IVXV). It is not affiliated with the 
+Estonian State Electoral Office (Riigi Valimisteenistus) or RIA.
+
+2. EXTERNAL SOFTWARE (IVXV)
+This repository does NOT contain the IVXV source code. 
+Official IVXV code is fetched from: https://github.com/valimised/ivxv
+IVXV is licensed under: Attribution-NonCommercial-NoDerivs 3.0 Unported (CC BY-NC-ND 3.0).
+Users of this build-tool must comply with the IVXV license terms.
+
+3. TEST DATA AND PRIVACY (GDPR)
+This repository contains digital signature containers (.asice / .bdoc) 
+provided by project contributors for research and audit purposes.
+- These files contain real names and Estonian personal identification 
+  codes (isikukood) of the contributors.
+- All contributors have explicitly consented to the inclusion of their 
+  test-signatures in this public repository to aid the transparency 
+  of the e-voting audit process.
+- These data are provided "as is" for technical verification only.
+
+4. LICENSE FOR THIS REPOSITORY
+The build scripts, Makefiles, and documentation created by the 
+ivxv-build project are dedicated to the public domain under the 
+Creative Commons CC0 1.0 Universal license.
