@@ -14,7 +14,7 @@ Regarding repository activity: the ivxv GitHub repository shows little or no vis
 Taken together, the build friction, outdated documentation, lack of automation, and low visible activity give the impression of a repository that exists to satisfy publication or transparency requirements, rather than to support external developers or encourage independent technical scrutiny.
 
 # note on test data
-This repository contains test ballots and signatures. Some of these files contain real personal data (names and Estonian personal codes) from contributors who have explicitly consented to this for audit purposes. We are working on providing fully synthetic (mocked) datasets in the future. See NOTICE.txt for details.
+This repository contains test ballots and signatures. Some of these files contain real personal data (names and Estonian personal codes) from contributors who have explicitly consented to this for audit purposes. We are working on providing fully synthetic (mocked) datasets in the future. See NOTICE for details.
 
 # disclaimer
 This is an independent research project. It is not affiliated with the Estonian State Electoral Office. Use these tools at your own risk.
