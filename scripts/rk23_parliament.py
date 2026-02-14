@@ -15,6 +15,7 @@ import csv
 import xml.etree.ElementTree as ET
 import os
 import sys
+from pathlib import Path
 from collections import defaultdict, namedtuple
 
 Candidate = namedtuple("Candidate",
@@ -413,6 +414,7 @@ def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e):
         lst = sorted(
             by_party[p],
             key=lambda r: (
+                -r["votes_total"],
                 r["district"],
                 0 if r["mandateType"] == "PERSONAL" else 1 if r["mandateType"] == "DISTRICT" else 2,
                 r["candidateRegNumber"],
@@ -547,69 +549,70 @@ def write_csv(path_out, rows):
                 ]
             )
 
-
 def main():
-    default_voting = "VOTING_RESULT_IN_COUNTIES.xml"
-    default_candidates = "ELECTION_CANDIDATES.xml"
-    default_csv = "elected_101.csv"
-    default_txt = "elected_101.txt"
-    default_pie = "seats_pies.png"
-
     ap = argparse.ArgumentParser(description="RK 2023 mandate reconstruction")
-    ap.add_argument(
-        "--voting",
-        default=default_voting,
-        help="Path to VOTING_RESULT_IN_COUNTIES.xml (default: %(default)s)",
-    )
-    ap.add_argument(
-        "--candidates",
-        default=default_candidates,
-        help="Path to ELECTION_CANDIDATES.xml (default: %(default)s)",
-    )
+
+    def add_path_arg(names, filename, *, optional=False, help_text=None):
+        primary = names if isinstance(names, str) else names[0]
+        clean = primary.lstrip("-")
+        ap.add_argument(
+            *(names if isinstance(names, (tuple, list)) else (names,)),
+            type=Path,
+            **({"nargs": "?", "const": filename, "default": None}
+               if optional else
+               {"default": Path(filename)}),
+            help=help_text or (
+                f"Path {clean} (default: %(const)s)" if optional else f"Path {clean} (default: %(default)s)"),
+        )
+
+    add_path_arg(("--voting", "-v"), "VOTING_RESULT_IN_COUNTIES.xml")
+    add_path_arg("--candidates", "ELECTION_CANDIDATES.xml")
+
     ap.add_argument(
         "--out",
         default="print",
         choices=["print", "csv", "txt"],
         help="Output mode (default: %(default)s)",
     )
-    ap.add_argument(
-        "--pie",
-        nargs="?",
-        const=default_pie,
-        default=None,
-        help="Write 3 pie charts (paper/actual/e-votes) to PNG (default: %(const)s).",
-    )
-    ap.add_argument(
-        "output",
-        nargs="?",
-        default=None,
-        help="Output file path for --out csv/txt (default: elected_101.csv / elected_101.txt)",
-    )
-    ap.add_argument(
-        "--base",
-        default=None,
-        help="Base path for default input/output files.",
-    )
+
+    add_path_arg("--pie", "seats_pies.png", optional=True,
+             help_text="Write 3 pie charts (paper/actual/e-votes) to PNG (default: %(const)s).")
+
+    add_path_arg("--ev-delta", "delta.txt", optional=True,
+             help_text="Apply party-level e-vote deltas from file. If used without value, loads %(const)s.")
+
+    ap.add_argument("--base", type=Path, default=Path("."),
+                    help="Base path (default: %(default)s)")
+
+    ap.add_argument("output", nargs="?", type=Path,
+                    help="Output file path for --out csv/txt")
 
     args = ap.parse_args()
 
-    if args.base:
-        if args.voting == default_voting:
-            args.voting = os.path.join(args.base, args.voting)
-        if args.candidates == default_candidates:
-            args.candidates = os.path.join(args.base, args.candidates)
+    def resolve(p: Path, *, must_exist=False) -> Path:
+        p = p if p.is_absolute() else args.base / p
+        if must_exist and not p.exists():
+            ap.error(f"missing file: {p}")
+        return p
 
-    if not os.path.exists(args.voting):
-        print(f"ERROR: missing file: {args.voting}")
-        sys.exit(1)
-    if not os.path.exists(args.candidates):
-        print(f"ERROR: missing file: {args.candidates}")
-        sys.exit(1)
+    args.voting = resolve(args.voting, must_exist=True)
+    args.candidates = resolve(args.candidates, must_exist=True)
 
-    cand_by_id, districts, party_votes_d, party_votes_nat, cand_total, cand_e, total_valid = load_voting(
-        args.voting)
-
+    cand_by_id, districts, party_votes_d, party_votes_nat, cand_total, cand_e, total_valid = load_voting(args.voting)
     cand_order = load_candidate_order_optional(args.candidates)
+
+    # Optional e-vote delta simulation (neutral distribution; no "maximize impact" logic).
+    if args.ev_delta:
+        try:
+            import ev_delta_utils
+            delta_path = resolve(args.ev_delta, must_exist=True)
+            deltas = ev_delta_utils.load_ev_deltas(delta_path)
+            ev_delta_utils.apply_ev_party_deltas(
+                deltas, cand_by_id, party_votes_d, party_votes_nat, cand_total, cand_e
+            )
+            total_valid = sum(party_votes_nat.values())
+        except ModuleNotFoundError:
+            ap.error("missing ev_delta_utils.py (required for --ev-delta)")
 
     elected = compute_elected(
         cand_by_id,
@@ -643,11 +646,9 @@ def main():
     if args.out == "print":
         write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e)
     elif args.out in ("csv", "txt"):
-        out = args.output or (default_csv if args.out == "csv" else default_txt)
-        if args.base and args.output is None:
-            out = os.path.join(args.base, out)
-        write_csv(out, rows)
-        print(f"OK: wrote {out} (101 rows)")
+        out_path = resolve(args.output or Path(f"elected_101.{args.out}"))
+        write_csv(out_path, rows)
+        print(f"OK: wrote {out_path} (101 rows)")
 
     if args.pie:
         try:
@@ -675,17 +676,13 @@ def main():
         for c in cand_by_id.values():
             if c.party_code and c.party_name:
                 party_name_by_code[c.party_code] = c.party_name
-
-        pie_out = args.pie
-        if args.base and args.pie == default_pie:
-            pie_out = os.path.join(args.base, pie_out)
         try:
-            plot_seat_pies(pie_out, party_name_by_code, seats_paper, seats_actual, seats_e)
+            pie_path = resolve(args.pie)
+            plot_seat_pies(pie_path, party_name_by_code,
+                           seats_paper, seats_actual, seats_e)
         except ModuleNotFoundError as e:
-            print("ERROR: matplotlib is required for --pie.")
-            print("Install: pip install matplotlib")
-            sys.exit(1)
-        print(f"OK: wrote pie {pie_out}")
+            ap.error("matplotlib required for --pie (pip install matplotlib)")
+        print(f"OK: wrote pie {pie_path}")
 
 
 if __name__ == "__main__":
