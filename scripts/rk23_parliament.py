@@ -10,10 +10,8 @@
 #  --out csv [file]      -> semicolon CSV with full columns (same regardless of file extension)
 
 import argparse
-import math
 import csv
 import xml.etree.ElementTree as ET
-import os
 import sys
 from pathlib import Path
 from collections import defaultdict, namedtuple
@@ -23,7 +21,7 @@ Candidate = namedtuple("Candidate",
 
 
 
-def load_candidate_order_optional(path_candidates_xml: str):
+def load_candidate_order_optional(path_candidates_xml: Path):
     """Return candidateId -> sequenceNumberInAdminUnit if ELECTION_CANDIDATES.xml is available.
     Voting results XML does not include list order; without this, compensation mandate recipient selection
     can differ for low-vote edge cases.
@@ -76,7 +74,7 @@ def dH_divisor(k: int) -> float:
     return 1.0 if k == 1 else (k ** 0.9)
 
 
-def load_voting(path_voting_xml: str):
+def load_voting(path_voting_xml: Path):
     tree = ET.parse(path_voting_xml)
     root = tree.getroot()
 
@@ -225,7 +223,7 @@ def compute_entitlements(party_votes_nat, elig, seats=101):
     return res
 
 
-def compute_elected(cand_by_id, districts, party_votes_d, party_votes_nat, cand_total, cand_e, cand_order, total_valid):
+def compute_elected(cand_by_id, districts, party_votes_d, party_votes_nat, cand_total, cand_order, total_valid):
     elig = eligible_parties(party_votes_nat, total_valid)
 
     # --- Stage 1: personal mandates ---
@@ -241,7 +239,7 @@ def compute_elected(cand_by_id, districts, party_votes_d, party_votes_nat, cand_
         if d not in districts:
             continue
         quota = districts[d]["quota"]
-        if quota > 0 and votes >= quota:
+        if 0 < quota <= votes:
             elected[cid] = "PERSONAL"
             party_seats_won[c.party_code] += 1
             party_seats_won_d[d][c.party_code] += 1
@@ -408,16 +406,16 @@ def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e):
         for cid, c in cand_by_id.items():
             if c.party_code == p:
                 party_ev += cand_e.get(cid, 0)
-        party_paper = max(party_votes - party_ev, 0)
+        #party_paper = max(party_votes - party_ev, 0)
         party_ev_pct = fmt_pct(party_ev, party_votes)
         print(f"\n{p}  {party_name.get(p, '')}  seats={party_seats[p]}")
         lst = sorted(
             by_party[p],
-            key=lambda r: (
-                -r["votes_total"],
-                r["district"],
-                0 if r["mandateType"] == "PERSONAL" else 1 if r["mandateType"] == "DISTRICT" else 2,
-                r["candidateRegNumber"],
+            key=lambda r2: (
+                -r2["votes_total"],
+                r2["district"],
+                0 if r2["mandateType"] == "PERSONAL" else 1 if r2["mandateType"] == "DISTRICT" else 2,
+                r2["candidateRegNumber"],
             ),
         )
         table_rows = []
@@ -440,8 +438,8 @@ def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e):
             for i, cell in enumerate(row):
                 widths[i] = max(widths[i], len(cell))
 
-        def fmt_row(row):
-            return "  ".join(cell.ljust(widths[i]) for i, cell in enumerate(row))
+        def fmt_row(row2):
+            return "  ".join(cell2.ljust(widths[i2]) for i2, cell2 in enumerate(row2))
 
         print(fmt_row(cols))
         print("  ".join("-" * widths[i] for i in range(len(widths))))
@@ -503,8 +501,8 @@ def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e):
         for i, cell in enumerate(row):
             sum_widths[i] = max(sum_widths[i], len(cell))
 
-    def fmt_sum_row(row):
-        return "  ".join(cell.ljust(sum_widths[i]) for i, cell in enumerate(row))
+    def fmt_sum_row(row2):
+        return "  ".join(cell2.ljust(sum_widths[i2]) for i2, cell2 in enumerate(row2))
 
     print(fmt_sum_row(sum_cols))
     print("  ".join("-" * sum_widths[i] for i in range(len(sum_widths))))
@@ -620,7 +618,6 @@ def main():
         party_votes_d,
         party_votes_nat,
         cand_total,
-        cand_e,
         cand_order,
         total_valid,
     )
@@ -635,11 +632,11 @@ def main():
     }
 
     rows.sort(
-        key=lambda r: (
-            party_order.get(r["partyCode"], 10**9),
-            -r["votes_total"],
-            r["district"],
-            r["candidateRegNumber"],
+        key=lambda r2: (
+            party_order.get(r2["partyCode"], 10 ** 9),
+            -r2["votes_total"],
+            r2["district"],
+            r2["candidateRegNumber"],
         )
     )
 
@@ -663,13 +660,13 @@ def main():
         # Paper-only scenario
         cand_paper = {cid: max(0, cand_total.get(cid, 0) - cand_e.get(cid, 0)) for cid in cand_by_id.keys()}
         pv_d_p, pv_n_p, tv_p = derive_party_votes_from_candidates(cand_by_id, cand_paper, districts)
-        elected_paper = compute_elected(cand_by_id, districts, pv_d_p, pv_n_p, cand_paper, defaultdict(int), cand_order, tv_p)
+        elected_paper = compute_elected(cand_by_id, districts, pv_d_p, pv_n_p, cand_paper, cand_order, tv_p)
         seats_paper = seats_by_party(elected_paper, cand_by_id)
 
         # E-votes-only scenario
         cand_ev = {cid: cand_e.get(cid, 0) for cid in cand_by_id.keys()}
         pv_d_e, pv_n_e, tv_e = derive_party_votes_from_candidates(cand_by_id, cand_ev, districts)
-        elected_ev = compute_elected(cand_by_id, districts, pv_d_e, pv_n_e, cand_ev, cand_ev, cand_order, tv_e)
+        elected_ev = compute_elected(cand_by_id, districts, pv_d_e, pv_n_e, cand_ev, cand_order, tv_e)
         seats_e = seats_by_party(elected_ev, cand_by_id)
 
         party_name_by_code = {}
@@ -680,7 +677,7 @@ def main():
             pie_path = resolve(args.pie)
             plot_seat_pies(pie_path, party_name_by_code,
                            seats_paper, seats_actual, seats_e)
-        except ModuleNotFoundError as e:
+        except ModuleNotFoundError as _:
             ap.error("matplotlib required for --pie (pip install matplotlib)")
         print(f"OK: wrote pie {pie_path}")
 

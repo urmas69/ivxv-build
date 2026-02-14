@@ -17,7 +17,7 @@ from collections import defaultdict
 _DELTA_RE = re.compile(r"^\s*([A-Z0-9_]+)\s*([+-])\s*(\d+)\s*$")
 
 
-def load_ev_deltas(path: str) -> dict[str, int]:
+def load_ev_deltas(path: Path) -> dict[str, int]:
     deltas: dict[str, int] = defaultdict(int)
     with open(path, "r", encoding="utf-8") as f:
         for ln, line in enumerate(f, 1):
