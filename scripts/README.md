@@ -23,13 +23,15 @@ python3 rk23_parliament.py --out print
   Path to `VOTING_RESULT_IN_COUNTIES.xml` (default: `VOTING_RESULT_IN_COUNTIES.xml`)
 - `--candidates <path>`  
   Path to `ELECTION_CANDIDATES.xml` (default: `ELECTION_CANDIDATES.xml`)
-- `--out print|csv`  
+- `--out print|csv|txt`  
   Output mode (default: `print`)
 - `--pie [file]`  
   Write 3 pie charts (paper / actual / e-votes) to PNG.  
   Default filename: `seats_pies.png`
+- `--base <path>`  
+  Base path for default input/output files.
 - `[output]` (positional)  
-  Output file path for `--out csv` (default: `elected_101.csv`)
+  Output file path for `--out csv/txt` (default: `elected_101.csv` / `elected_101.txt`)
 
 ### Examples
 Print to console:
@@ -42,6 +44,11 @@ Write CSV:
 python rk23_parliament.py --out csv elected_101.csv
 ```
 
+Write TXT (same content as CSV):
+```bash
+python rk23_parliament.py --out txt
+```
+
 Write pie charts (PNG):
 ```bash
 python rk23_parliament.py --pie
@@ -50,6 +57,11 @@ python rk23_parliament.py --pie
 Custom files:
 ```bash
 python rk23_parliament.py --voting VOTING_RESULT_IN_COUNTIES.xml --candidates ELECTION_CANDIDATES.xml --out csv out.csv
+```
+
+Use base path:
+```bash
+python rk23_parliament.py --base /data/rk23 --out txt
 ```
 
 ### Notes

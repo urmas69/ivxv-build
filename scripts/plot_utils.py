@@ -18,7 +18,10 @@ def _avg_rgb_from_image(path_img):
 
 
 def plot_seat_pies(path_out, party_name_by_code, seats_paper, seats_actual, seats_e):
-    import matplotlib.pyplot as plt
+    try:
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError("matplotlib is required; install with: pip install matplotlib")
 
     parties = sorted(set(seats_paper) | set(seats_actual) | set(seats_e))
 

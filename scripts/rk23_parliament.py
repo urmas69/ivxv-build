@@ -549,27 +549,33 @@ def write_csv(path_out, rows):
 
 
 def main():
+    default_voting = "VOTING_RESULT_IN_COUNTIES.xml"
+    default_candidates = "ELECTION_CANDIDATES.xml"
+    default_csv = "elected_101.csv"
+    default_txt = "elected_101.txt"
+    default_pie = "seats_pies.png"
+
     ap = argparse.ArgumentParser(description="RK 2023 mandate reconstruction")
     ap.add_argument(
         "--voting",
-        default="VOTING_RESULT_IN_COUNTIES.xml",
+        default=default_voting,
         help="Path to VOTING_RESULT_IN_COUNTIES.xml (default: %(default)s)",
     )
     ap.add_argument(
         "--candidates",
-        default="ELECTION_CANDIDATES.xml",
+        default=default_candidates,
         help="Path to ELECTION_CANDIDATES.xml (default: %(default)s)",
     )
     ap.add_argument(
         "--out",
         default="print",
-        choices=["print", "csv"],
+        choices=["print", "csv", "txt"],
         help="Output mode (default: %(default)s)",
     )
     ap.add_argument(
         "--pie",
         nargs="?",
-        const="seats_pies.png",
+        const=default_pie,
         default=None,
         help="Write 3 pie charts (paper/actual/e-votes) to PNG (default: %(const)s).",
     )
@@ -577,10 +583,21 @@ def main():
         "output",
         nargs="?",
         default=None,
-        help="Output file path for --out csv (default: elected_101.csv)",
+        help="Output file path for --out csv/txt (default: elected_101.csv / elected_101.txt)",
+    )
+    ap.add_argument(
+        "--base",
+        default=None,
+        help="Base path for default input/output files.",
     )
 
     args = ap.parse_args()
+
+    if args.base:
+        if args.voting == default_voting:
+            args.voting = os.path.join(args.base, args.voting)
+        if args.candidates == default_candidates:
+            args.candidates = os.path.join(args.base, args.candidates)
 
     if not os.path.exists(args.voting):
         print(f"ERROR: missing file: {args.voting}")
@@ -625,8 +642,10 @@ def main():
 
     if args.out == "print":
         write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e)
-    elif args.out == "csv":
-        out = args.output or "elected_101.csv"
+    elif args.out in ("csv", "txt"):
+        out = args.output or (default_csv if args.out == "csv" else default_txt)
+        if args.base and args.output is None:
+            out = os.path.join(args.base, out)
         write_csv(out, rows)
         print(f"OK: wrote {out} (101 rows)")
 
@@ -657,13 +676,16 @@ def main():
             if c.party_code and c.party_name:
                 party_name_by_code[c.party_code] = c.party_name
 
+        pie_out = args.pie
+        if args.base and args.pie == default_pie:
+            pie_out = os.path.join(args.base, pie_out)
         try:
-            plot_seat_pies(args.pie, party_name_by_code, seats_paper, seats_actual, seats_e)
+            plot_seat_pies(pie_out, party_name_by_code, seats_paper, seats_actual, seats_e)
         except ModuleNotFoundError as e:
             print("ERROR: matplotlib is required for --pie.")
             print("Install: pip install matplotlib")
             sys.exit(1)
-        print(f"OK: wrote pie {args.pie}")
+        print(f"OK: wrote pie {pie_out}")
 
 
 if __name__ == "__main__":
