@@ -390,7 +390,7 @@ def seats_by_party(elected, cand_by_id):
 
 
 
-def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total):
+def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e):
     by_party = defaultdict(list)
     party_name = {}
     for r in rows:
@@ -400,16 +400,16 @@ def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total):
     party_seats = {p: len(lst) for p, lst in by_party.items()}
     parties = sorted(by_party.keys(), key=lambda p: (-party_seats[p], p))
 
-    cols = ["name", "Cand#", "Votes", "eVotes%", "district", "mandateType"]
+    cols = ["name", "Cand#", "Votes", "eVotes", "eVotes%", "district", "mandateType"]
     for p in parties:
         party_votes = party_votes_nat.get(p, 0)
-        party_ev = sum(r["votes_e"] for r in by_party[p])
+        party_ev = 0
+        for cid, c in cand_by_id.items():
+            if c.party_code == p:
+                party_ev += cand_e.get(cid, 0)
         party_paper = max(party_votes - party_ev, 0)
         party_ev_pct = fmt_pct(party_ev, party_votes)
-        print(
-            f"\n{p}  {party_name.get(p, '')}  seats={party_seats[p]}  votes={party_votes}  "
-            f"eVotes={party_ev}  paper={party_paper}  eVotes%={party_ev_pct}"
-        )
+        print(f"\n{p}  {party_name.get(p, '')}  seats={party_seats[p]}")
         lst = sorted(
             by_party[p],
             key=lambda r: (
@@ -425,6 +425,7 @@ def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total):
                     r["name"],
                     str(r["candidateRegNumber"]),
                     str(r["votes_total"]),
+                    str(r["votes_e"]),
                     r["votes_e_pct"],
                     str(r["district"]),
                     r["mandateType"],
@@ -447,19 +448,28 @@ def write_print(rows, party_votes_nat, cand_by_id, elected, cand_total):
 
         total_votes = sum(r["votes_total"] for r in by_party[p])
         total_ev = sum(r["votes_e"] for r in by_party[p])
-        total_paper = total_votes - total_ev
         total_ev_pct = fmt_pct(total_ev, total_votes)
         summary_row = [
-            "TOTAL",
+            "TOTAL elected",
             "",
             str(total_votes),
+            str(total_ev),
             total_ev_pct,
             "",
             "",
         ]
         print("  ".join("-" * widths[i] for i in range(len(widths))))
         print(fmt_row(summary_row))
-        print(f"TOTAL  eVotes={total_ev}  paper={total_paper}")
+        party_total_row = [
+            "TOTAL",
+            "",
+            str(party_votes),
+            str(party_ev),
+            party_ev_pct,
+            "",
+            "",
+        ]
+        print(fmt_row(party_total_row))
 
     print("\nSUMMARY")
     grand_other = 0
@@ -614,7 +624,7 @@ def main():
     )
 
     if args.out == "print":
-        write_print(rows, party_votes_nat, cand_by_id, elected, cand_total)
+        write_print(rows, party_votes_nat, cand_by_id, elected, cand_total, cand_e)
     elif args.out == "csv":
         out = args.output or "elected_101.csv"
         write_csv(out, rows)
