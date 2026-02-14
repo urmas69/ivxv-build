@@ -5,7 +5,7 @@ Deterministic reconstruction of the 101 elected members for RK elections.
 
 ### Requirements
 - Python 3.x
-- `matplotlib` only if you use `--plot`
+- `matplotlib` only if you use `--pie`
 
 ### Run (any shell)
 ```bash
@@ -66,7 +66,7 @@ python rk23_parliament.py --base /data/rk23 --out txt
 
 ### Notes
 - The CSV is semicolon-delimited and written with `utf-8-sig` for Excel compatibility.
-- `--plot` requires `matplotlib`:
+- `--pie` requires `matplotlib`:
 ```bash
 python -m pip install matplotlib
 ```
